@@ -6,7 +6,7 @@ set -euo pipefail
 #
 # Usage: bash scripts/backup-db.sh [bucket-name]
 
-S3_BUCKET="${1:-stratyon-backups}"
+S3_BUCKET="${1:-stratyon-backups-670048192993}"
 TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
 BACKUP_FILE="stratyon_db_${TIMESTAMP}.sql.gz"
 
