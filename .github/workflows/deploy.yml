@@ -1,0 +1,192 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  AWS_REGION: eu-central-1
+  ECR_REPOSITORY: stratyon-backend
+
+permissions:
+  contents: read
+
+jobs:
+  # ──────────────────────────────────────────────
+  # Job 1: Lint & Test (runs on every push and PR)
+  # ──────────────────────────────────────────────
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test_user"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgeos-dev libproj-dev gdal-bin libgdal-dev
+
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+          POSTGRES_DB: test_db
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: test-secret-key-for-ci
+          JWT_SECRET_KEY: test-jwt-secret-for-ci
+          ENVIRONMENT: testing
+        run: pytest --tb=short -q
+
+  # ──────────────────────────────────────────────
+  # Job 2: Build Docker Image & Push to ECR
+  # ──────────────────────────────────────────────
+  build:
+    name: Build & Push
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set image metadata
+        id: meta
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          echo "image_tag=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.meta.outputs.image_tag }}
+            ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+
+  # ──────────────────────────────────────────────
+  # Job 3: Deploy to EC2
+  # ──────────────────────────────────────────────
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1
+        env:
+          IMAGE_TAG: ${{ needs.build.outputs.image_tag }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          DEPLOY_REGION: ${{ env.AWS_REGION }}
+          DEPLOY_REPO: ${{ env.ECR_REPOSITORY }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: IMAGE_TAG,AWS_ACCOUNT_ID,DEPLOY_REGION,DEPLOY_REPO
+          script: |
+            set -e
+
+            ECR_URL="${AWS_ACCOUNT_ID}.dkr.ecr.${DEPLOY_REGION}.amazonaws.com"
+            FULL_IMAGE="${ECR_URL}/${DEPLOY_REPO}:${IMAGE_TAG}"
+
+            echo "=== Deploying ${FULL_IMAGE} ==="
+
+            cd /opt/stratyon
+
+            # Pull latest code (for compose file and scripts)
+            git pull origin main
+
+            # Login to ECR from EC2
+            aws ecr get-login-password --region ${DEPLOY_REGION} \
+              | docker login --username AWS --password-stdin ${ECR_URL}
+
+            # Pull the pre-built image (built in CI, not on this small instance)
+            docker pull ${FULL_IMAGE}
+
+            # Tag it so docker compose uses it
+            docker tag ${FULL_IMAGE} stratyon-backend:latest
+
+            # Pull secrets from Parameter Store into .env
+            bash scripts/pull-secrets.sh
+
+            # Deploy using the pre-built image
+            docker compose -f docker-compose.prod.yml up -d --no-build
+
+            # Health check with retries
+            echo "Waiting for services..."
+            sleep 20
+            for i in 1 2 3 4 5; do
+              if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
+                echo "Health check passed!"
+                break
+              fi
+              if [ "$i" -eq 5 ]; then
+                echo "Health check FAILED"
+                docker logs stratyon-backend --tail 30
+                exit 1
+              fi
+              echo "Retry $i/5..."
+              sleep 10
+            done
+
+            # Cleanup old images
+            docker image prune -f
+
+            echo "=== Deploy complete: ${IMAGE_TAG} ==="

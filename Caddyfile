@@ -1,0 +1,11 @@
+# STRATYON Backend - Caddy Reverse Proxy Configuration
+#
+# For IP-only access (no domain yet):
+#   DOMAIN=:80 caddy run
+#
+# For domain with automatic HTTPS:
+#   DOMAIN=api.yourdomain.com caddy run
+
+{$DOMAIN::80} {
+	reverse_proxy localhost:8000
+}
