@@ -175,7 +175,7 @@ Budget Allocation (50,000 TL):
 ### Frontend Environment (`.env.local`)
 ```env
 ✅ NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
-✅ NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ1IjoibWFzd2FyZSIsImEiOiJjbWpyaGFjcGczeThmM2RxemxjbnNzbngyIn0.3hFf4yEcPS2c5CvCw04L1g
+✅ NEXT_PUBLIC_MAPBOX_TOKEN=pk.ey...
 ```
 
 ---
