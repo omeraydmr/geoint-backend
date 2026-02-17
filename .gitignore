@@ -98,3 +98,5 @@ temp/
 
 # uv
 uv.lock
+
+.maestro
