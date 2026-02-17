@@ -1,0 +1,81 @@
+version: '3.9'
+
+# STRATYON Backend - Simplified Architecture
+# Single Python backend with APScheduler (no Celery)
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: stratyon-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-stratyon}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-stratyon123}
+      POSTGRES_DB: ${POSTGRES_DB:-stratyon_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - stratyon-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stratyon"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: stratyon-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - stratyon-network
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stratyon-backend
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_HOST=db
+      - REDIS_URL=redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - stratyon-network
+    volumes:
+      - ./app:/app/app
+      - ./alembic:/app/alembic
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # REMOVED: celery-worker (replaced by APScheduler in backend)
+  # REMOVED: celery-beat (replaced by APScheduler in backend)
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  stratyon-network:
+    driver: bridge

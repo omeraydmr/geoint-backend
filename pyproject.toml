@@ -1,0 +1,75 @@
+[project]
+name = "stratyon-backend"
+version = "0.2.0"
+description = "Stratyon GEOINT Platform Backend"
+requires-python = ">=3.13"
+dependencies = [
+    # Core Framework
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.29.0",
+    "gunicorn>=21.2.0",
+    "python-multipart>=0.0.9",
+
+    # Database
+    "sqlalchemy[asyncio]>=2.0.25",
+    "geoalchemy2>=0.14.4",
+    "psycopg2-binary>=2.9.10",
+    "asyncpg>=0.29.0",
+    "alembic>=1.13.1",
+
+    # Caching & Scheduling
+    "redis>=5.0.1",
+    "apscheduler>=3.10.4",    # Lightweight scheduler (replaces Celery)
+    "slowapi>=0.1.9",         # Rate limiting
+
+    # WebSocket
+    "python-socketio>=5.10.0",
+
+    # Geospatial
+    "geopandas>=0.14.3",
+    "shapely>=2.0.3",
+    "pyproj>=3.6.1",
+    "geojson>=3.1.0",
+
+    # Data Collection
+    "pytrends>=4.9.2",
+    "httpx>=0.27.0",
+    "beautifulsoup4>=4.12.3",
+
+    # AI/ML
+    "openai>=1.12.0",
+    "anthropic>=0.18.0",
+    "langchain>=0.1.9",
+    "scikit-learn>=1.4.0",
+    "numpy>=1.26.4",
+    "pandas>=2.2.0",
+
+    # Advertising APIs
+    "google-ads>=28.4.1",
+    "facebook-business>=19.0.3",
+
+    # Auth
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    "bcrypt>=4.0.0,<5.0.0",  # Pin bcrypt for passlib compatibility
+
+    # Utilities
+    "pydantic[email]>=2.6.1",
+    "pydantic-settings>=2.2.1",
+    "email-validator>=2.1.1",
+    "python-dotenv>=1.0.1",
+    "tenacity>=8.2.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.1",
+    "pytest-asyncio>=0.23.5",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

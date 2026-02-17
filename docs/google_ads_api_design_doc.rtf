@@ -1,0 +1,98 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2867
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica-Light;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 # STRATYON - Google Ads API Integration Design Document\
+\
+## 1. Application Overview\
+\
+**Application Name:** STRATYON\
+**Company:** Internal Development Project\
+**Contact:** omer.aydemir078@gmail.com\
+**Date:** December 2024\
+\
+## 2. Purpose\
+\
+STRATYON is a geo-intelligence and digital marketing platform designed for the Turkish market. The application integrates with Google Ads API to provide keyword research and market analysis capabilities.\
+\
+## 3. Google Ads API Usage\
+\
+### 3.1 Services Used\
+\
+| Service | Purpose |\
+|---------|---------|\
+| KeywordPlanIdeaService | Generate keyword ideas and retrieve search volume metrics |\
+| CustomerService | List accessible customer accounts |\
+\
+### 3.2 Data Flow\
+\
+```\
+User Request \uc0\u8594  STRATYON Backend \u8594  Google Ads API \u8594  Process Response \u8594  Store in Database \u8594  Display to User\
+```\
+\
+### 3.3 API Operations\
+\
+1. **Keyword Research**\
+   - Input: Seed keywords in Turkish\
+   - Output: Related keywords with search volume, competition, CPC\
+   - Location: Turkey (geo_target_constant: 2792)\
+   - Language: Turkish (language_constant: 1019)\
+\
+2. **Account Access**\
+   - List accessible customer accounts\
+   - Validate API credentials\
+\
+## 4. Architecture\
+\
+```\
+\uc0\u9484 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9488      \u9484 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9488      \u9484 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9488 \
+\uc0\u9474    Frontend      \u9474 \u9472 \u9472 \u9472 \u9472 \u9654 \u9474   Python Backend  \u9474 \u9472 \u9472 \u9472 \u9472 \u9654 \u9474   Google Ads API \u9474 \
+\uc0\u9474    (Next.js)     \u9474      \u9474   (FastAPI)       \u9474      \u9474                  \u9474 \
+\uc0\u9492 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9496      \u9492 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9496      \u9492 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9496 \
+                               \uc0\u9474 \
+                               \uc0\u9660 \
+                        \uc0\u9484 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9488 \
+                        \uc0\u9474    PostgreSQL     \u9474 \
+                        \uc0\u9474    Database       \u9474 \
+                        \uc0\u9492 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9496 \
+```\
+\
+## 5. Security Measures\
+\
+- OAuth 2.0 authentication with refresh tokens\
+- API credentials stored as environment variables\
+- No credentials exposed in client-side code\
+- Rate limiting implemented to respect API quotas\
+- All API calls logged for audit purposes\
+\
+## 6. User Access\
+\
+- **Access Type:** Internal users only (employees)\
+- **No external/public access** to Google Ads API features\
+- Authentication required for all API endpoints\
+\
+## 7. Compliance\
+\
+- We comply with Google Ads API Terms of Service\
+- We do not resell or redistribute Google Ads data\
+- Data is used solely for internal business analysis\
+- User data is handled according to GDPR requirements\
+\
+## 8. Rate Limiting\
+\
+- Maximum 15,000 operations per day (Basic Access)\
+- Implemented caching to minimize API calls\
+- Background job queue for batch operations\
+\
+## 9. Contact Information\
+\
+- **Technical Contact:** omer.aydemir078@gmail.com\
+- **MCC Account ID:** 519-334-5186\
+\
+---\
+\
+*Document Version: 1.0*\
+*Last Updated: December 2024*\
+}
