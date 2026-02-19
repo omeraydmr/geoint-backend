@@ -170,6 +170,7 @@ All endpoints return JSON. Error responses follow this format:
 ```
     """,
     version="2.0.0",
+    redirect_slashes=False,
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
