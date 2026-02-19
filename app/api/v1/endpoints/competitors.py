@@ -226,7 +226,7 @@ async def compare_competitors(
 # Competitor CRUD Endpoints
 # ============================================
 
-@router.get("", response_model=List[CompetitorResponse])
+@router.get("/", response_model=List[CompetitorResponse])
 async def list_competitors(
     skip: int = 0,
     limit: int = 20,
@@ -260,7 +260,7 @@ async def list_competitors(
         )
 
 
-@router.post("", response_model=CompetitorResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=CompetitorResponse, status_code=status.HTTP_201_CREATED)
 async def create_competitor(
     competitor_data: CompetitorCreate,
     background_tasks: BackgroundTasks,

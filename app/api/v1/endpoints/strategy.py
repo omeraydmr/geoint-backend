@@ -196,7 +196,7 @@ async def generate_strategy(
         )
 
 
-@router.get("", response_model=List[StrategyResponse])
+@router.get("/", response_model=List[StrategyResponse])
 async def list_strategies(
     skip: int = 0,
     limit: int = 20,
@@ -363,7 +363,7 @@ async def get_strategy(
         )
 
 
-@router.post("", response_model=StrategyResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=StrategyResponse, status_code=status.HTTP_201_CREATED)
 async def create_strategy(
     strategy_data: StrategyCreate,
     current_user: Dict = Depends(get_current_user),

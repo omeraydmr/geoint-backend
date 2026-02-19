@@ -96,7 +96,7 @@ async def analyze_and_enrich_keyword(keyword_id: str, db: AsyncSession):
 # Keyword Endpoints
 # ============================================
 
-@router.get("", response_model=List[KeywordResponse])
+@router.get("/", response_model=List[KeywordResponse])
 async def list_keywords(
     skip: int = 0,
     limit: int = 50,
@@ -133,7 +133,7 @@ async def list_keywords(
         )
 
 
-@router.post("", response_model=KeywordResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=KeywordResponse, status_code=status.HTTP_201_CREATED)
 async def create_keyword(
     keyword_data: KeywordCreate,
     background_tasks: BackgroundTasks,

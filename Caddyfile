@@ -7,5 +7,10 @@
 #   DOMAIN=api.yourdomain.com caddy run
 
 {$DOMAIN::80} {
+	# Add trailing slash to /api paths that don't have one
+	# This prevents FastAPI 307 redirects on POST requests
+	@api_no_slash path_regexp api ^(/api/v1/[a-z-]+)$
+	redir @api_no_slash {re.api.1}/ 308
+
 	reverse_proxy localhost:8000
 }
