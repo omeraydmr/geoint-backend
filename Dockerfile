@@ -31,4 +31,4 @@ EXPOSE 8000
 
 # Run the application with gunicorn for production
 # Using 1 worker to avoid APScheduler duplicate job execution
-CMD ["gunicorn", "app.main:app", "-w", "1", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000", "--timeout", "120", "--graceful-timeout", "30"]
+CMD ["gunicorn", "app.main:app", "-w", "1", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000", "--timeout", "120", "--graceful-timeout", "30", "--forwarded-allow-ips", "*"]

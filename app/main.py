@@ -1,6 +1,7 @@
 """Main FastAPI application for STRATYON"""
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -184,6 +185,9 @@ All endpoints return JSON. Error responses follow this format:
 )
 
 # Configure middleware - order matters!
+# Proxy headers middleware (trust X-Forwarded-Proto from Caddy for correct HTTPS redirects)
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
+
 # Request logging middleware (first to capture all requests)
 app.add_middleware(RequestLoggingMiddleware)
 
