@@ -51,7 +51,7 @@ bcrypt>=4.0.0,<4.1.0  # Pin bcrypt for passlib compatibility
 pydantic[email]==2.6.1
 pydantic-settings==2.2.1
 email-validator==2.1.0
-python-dotenv==1.0.1
+python-dotenv==1.2.2
 tenacity==8.2.3
 
 # Testing
