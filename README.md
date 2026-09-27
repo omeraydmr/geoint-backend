@@ -1,5 +1,7 @@
 # STRATYON Backend
 
+> **Stratyon v1 · API.** Part of Stratyon, alongside [geoint-frontend](https://github.com/omeraydmr/geoint-frontend). The v2 rewrite (Spring Boot + Next.js, AI strategy reports) lives in [stratyonv2-backend](https://github.com/omeraydmr/stratyonv2-backend) and [stratyonv2-frontend](https://github.com/omeraydmr/stratyonv2-frontend).
+
 **Version:** 2.0.0
 **Framework:** Python 3.13+, FastAPI
 **Database:** PostgreSQL 16 + PostGIS 3.4
